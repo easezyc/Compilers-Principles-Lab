@@ -3,15 +3,22 @@ union Info{
 	int in;
 	float fl;
 };
+struct namelist{
+	char* name;
+	struct namelist* next;
+};
 struct ast{
 	int line;	
 	union Info info;
 	int type;
 	int rlength;
 	int llength;
+	char* name;//综合属性变量名
+	struct namelist* namearg;
 	struct ast *lc;
 	struct ast *rc;
 };
+struct namelist* addnamelist(struct ast* ast1,char* name);
 struct ast* newast(union Info v);
 struct ast* newastinit(union Info info,int type,int line);
 union Info makeint(int n);

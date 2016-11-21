@@ -11,7 +11,7 @@ int g()
 	int l=071;
 	if(x==1)
 	{
-
+        x=x+y+z+l;
 	}
 	else
 	{

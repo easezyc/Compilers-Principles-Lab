@@ -2,6 +2,8 @@
 //	#include"head.h"
 	#include"lex.yy.c"	
 	#include<string.h>
+	#include"symbol.h"
+	#include"symbol.c"
 	extern yylineno;
 	int yylex();
 	void yyerror(char *);
@@ -28,41 +30,42 @@
 %left DOT LB RB LP RP
 %%
 Program:	ExtDefList {$$ = newast1(maketext("Program"), $1);
-	tracetree($$, 0);
+//	tracetree($$, 0);
 	freetree($$);
+	symbollisttrace();
 };
 ExtDefList:	ExtDef ExtDefList{
 	$$ = newast2(maketext("ExtDefList"), $1,$2);
 } 
 	| {$$ = newast(maketext("null"));}
 	;
-ExtDef:		Specifier ExtDecList SEMI {$$ = newast3(maketext("ExtDef"), $1,$2,$3);}
+ExtDef:		Specifier ExtDecList SEMI {$$ = newast3(maketext("ExtDef"), $1,$2,$3);addsymbol1($1->name,$2->namearg);}
 	|Specifier SEMI {$$ = newast2(maketext("ExtDef"), $1,$2);}
-	|Specifier FunDec CompSt {$$ = newast3(maketext("ExtDef"), $1,$2,$3);}
+	|Specifier FunDec CompSt {$$ = newast3(maketext("ExtDef"), $1,$2,$3);modfunctype($2->name,$1->name);}
 	|error SEMI {}	
 ;
-ExtDecList:	VarDec {$$ = newast1(maketext("ExtDecList"), $1);}
-	|VarDec COMMA ExtDecList {$$ = newast3(maketext("ExtDecList"), $1,$2,$3);}
+ExtDecList:	VarDec {$$ = newast1(maketext("ExtDecList"), $1);$$->namearg=addnamelist($$,$1->name);}
+	|VarDec COMMA ExtDecList {$$ = newast3(maketext("ExtDecList"), $1,$2,$3);$$->namearg=addnamelist($3,$1->name);}
 	;
 
-Specifier:	TYPE {$$ = newast1(maketext("Specifier"), $1);}
-	|StructSpecifier {$$ = newast1(maketext("Specifier"), $1);}
+Specifier:	TYPE {$$ = newast1(maketext("Specifier"), $1);strcpy($$->name,$1->info.name);}
+	|StructSpecifier {$$ = newast1(maketext("Specifier"), $1);strcpy($$->name,$1->name);}
 	;
-StructSpecifier:	STRUCT OptTag LC DefList RC {$$ = newast5(maketext("StructSpecifier"), $1,$2,$3,$4,$5);}
-	|STRUCT Tag {$$ = newast2(maketext("StructSpecifier"), $1,$2);}
+StructSpecifier:	STRUCT OptTag LC DefList RC {$$ = newast5(maketext("StructSpecifier"), $1,$2,$3,$4,$5);strcpy($$->name,$2->name);}
+	|STRUCT Tag {$$ = newast2(maketext("StructSpecifier"), $1,$2);strcpy($$->name,$2->name);}
 	;
-OptTag:		ID {$$ = newast1(maketext("OptTag"), $1);}
+OptTag:		ID {$$ = newast1(maketext("OptTag"), $1);strcpy($$->name,$1->info.name);}
 	| {$$ = newast(maketext("null"));}
 	;
-Tag:	ID {$$ = newast1(maketext("Tag"), $1);};
+Tag:	ID {$$ = newast1(maketext("Tag"), $1);strcpy($$->name,$1->info.name);}
 
-VarDec:		ID {$$ = newast1(maketext("VarDec"), $1);}
-	|VarDec LB INT RB {$$ = newast4(maketext("VarDec"), $1,$2,$3,$4);};
-FunDec:		ID LP VarList RP {$$ = newast4(maketext("FunDec"), $1,$2,$3,$4);}
-	|ID LP RP {$$ = newast3(maketext("FunDec"), $1,$2,$3);};
-VarList:	ParamDec COMMA VarList{$$ = newast3(maketext("VarList"), $1,$2,$3);}
-	|ParamDec{$$ = newast1(maketext("VarList"), $1);};
-ParamDec:	Specifier VarDec{$$ = newast2(maketext("ParamDec"), $1,$2);};
+VarDec:		ID {$$ = newast1(maketext("VarDec"), $1);strcpy($$->name,$1->info.name);}
+	|VarDec LB INT RB {$$ = newast4(maketext("VarDec"), $1,$2,$3,$4);strcpy($$->name,$1->name);};//    assssssssaaaaaaaaaaaaaaaaaaaa
+FunDec:		ID LP VarList RP {$$ = newast4(maketext("FunDec"), $1,$2,$3,$4);addfunc($1->info.name,$3->namearg);strcpy($$->name,$1->info.name);}
+	|ID LP RP {$$ = newast3(maketext("FunDec"), $1,$2,$3);addfunc($1->info.name,NULL);strcpy($$->name,$1->info.name);}
+VarList:	ParamDec COMMA VarList{$$ = newast3(maketext("VarList"), $1,$2,$3);$$->namearg=addnamelist($3,$1->name);}
+	|ParamDec{$$ = newast1(maketext("VarList"), $1);$$->namearg=addnamelist($$,$1->name);}
+ParamDec:	Specifier VarDec{$$ = newast2(maketext("ParamDec"), $1,$2);strcpy($$->name,$2->name);$$->namearg=addnamelist($$,$2->name);addsymbol1($1->name,$$->namearg);}
 
 CompSt:		LC DefList StmtList RC{$$ = newast4(maketext("CompSt"), $1,$2,$3,$4);};
 StmtList:	Stmt StmtList{$$ = newast2(maketext("StmtList"), $1,$2);}
@@ -78,13 +81,13 @@ Stmt:		Exp SEMI{$$ = newast2(maketext("Stmt"), $1,$2);}
 DefList:	Def DefList {$$ = newast2(maketext("DefList"), $1,$2);}
 	| {$$ = newast(maketext("null"));;}
 	;
-Def:	Specifier DecList SEMI {$$ = newast3(maketext("Def"), $1,$2,$3);}
+Def:	Specifier DecList SEMI {$$ = newast3(maketext("Def"), $1,$2,$3);addsymbol1($1->name,$2->namearg);}
 ;
-DecList:	Dec {$$ = newast1(maketext("DecList"), $1);}
-	|Dec COMMA DecList {$$ = newast3(maketext("DecList"), $1,$2,$3);}
+DecList:	Dec {$$ = newast1(maketext("DecList"), $1);$$->namearg=addnamelist($$,$1->name);}
+	|Dec COMMA DecList {$$ = newast3(maketext("DecList"), $1,$2,$3);$$->namearg=addnamelist($3,$1->name);}
 	;
-Dec:	VarDec ASSIGNOP Exp {$$ = newast3(maketext("Dec"), $1,$2,$3);}
-	|VarDec {$$ = newast1(maketext("Dec"), $1);}
+Dec:	VarDec ASSIGNOP Exp {$$ = newast3(maketext("Dec"), $1,$2,$3);strcpy($$->name,$1->name);}
+	|VarDec {$$ = newast1(maketext("Dec"), $1);strcpy($$->name,$1->name);}
 	;
 
 Exp:	Exp ASSIGNOP Exp {$$ = newast3(maketext("Exp"), $1,$2,$3);}
@@ -110,6 +113,37 @@ Args:	Exp COMMA Args {$$ = newast3(maketext("Args"), $1,$2,$3);}
 	|Exp {$$ = newast1(maketext("Args"), $1);}
 	;
 %%
+void show(struct namelist* list)
+{
+	while(list!=NULL)
+	{
+		printf("%s\n",list->name);
+		list=list->next;
+	}
+}
+struct namelist* addnamelist(struct ast* ast1,char* name)
+{
+	if(ast1->namearg==NULL)
+	{
+		ast1->namearg=(struct namelist*)malloc(sizeof(struct namelist));
+		ast1->namearg->next=NULL;
+		ast1->namearg->name=(char*)malloc(sizeof(char));
+		strcpy(ast1->namearg->name,name);
+	}
+	else{
+		struct namelist* t=ast1->namearg;
+		while(t->next!=NULL)
+		{
+			t=t->next;
+		}
+		struct namelist* tt=(struct namelist*)malloc(sizeof(struct namelist));
+		tt->next=NULL;
+		tt->name=(char*)malloc(sizeof(char));
+		strcpy(tt->name,name);
+		t->next=tt;
+	}
+	return ast1->namearg;
+}
 struct ast* newast(union Info v)
 {
 	struct ast *ast=(struct ast*)malloc(sizeof(struct ast));
@@ -118,6 +152,7 @@ struct ast* newast(union Info v)
 		printf("error type C at line %d",yylineno);
 	}
 	ast->info=v;
+	ast->name=(char*)malloc(sizeof(char));
 	return ast;		
 }
 struct ast* newastinit(union Info info,int type,int line)
@@ -195,9 +230,9 @@ struct ast *newast4(union Info info, struct ast *a,struct ast *b,struct ast *c,s
 }
 struct ast *newast5(union Info info, struct ast *a,struct ast *b,struct ast *c,struct ast *d,struct ast *e)
 {
-        struct ast *ast = newast(info);
+    struct ast *ast = newast(info);
 	ast->line=a->line;
-        ast->lc = a;
+    ast->lc = a;
 	a->rc=b;
 	ast->llength=5;
 	a->rlength=4;
@@ -212,9 +247,9 @@ struct ast *newast5(union Info info, struct ast *a,struct ast *b,struct ast *c,s
 }
 struct ast *newast7(union Info info, struct ast *a,struct ast *b,struct ast *c,struct ast *d,struct ast *e,struct ast *f,struct ast *g)
 {
-        struct ast *ast = newast(info);
+    struct ast *ast = newast(info);
 	ast->line=a->line; 
-        ast->lc = a;
+    ast->lc = a;
 	a->rc=b;
 	ast->llength=7;
 	a->rlength=6;
@@ -268,7 +303,8 @@ void tracetree(struct ast *t,int l) {
     }*/
 }
 int main(int argc,char** argv) {
-    if(argc<=1)return 1;
+    initsymbollist();
+	if(argc<=1)return 1;
 	FILE* f=fopen(argv[1],"r");
 	if(!f)
 	{
