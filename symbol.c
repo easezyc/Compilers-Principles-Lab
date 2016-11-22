@@ -1,6 +1,7 @@
 #include<stdio.h>
 #include<string.h>
 #include"symbol.h"
+#include"error.c"
 void initsymbollist()
 {
     symbollist=(struct symbol*)malloc(sizeof(struct symbol));
@@ -8,14 +9,15 @@ void initsymbollist()
     symbollist->name=(char*)malloc(sizeof(char));
     symbollist->typname=(char*)malloc(sizeof(char));
 }
-void insertsym1(char* name,char* typname)
+void insertsym1(char* name,char* typname,int arraytype)
 {
     struct symbol* sym=(struct symbol*)malloc(sizeof(struct symbol));
     sym->name=(char*)malloc(sizeof(char));
     strcpy(sym->name,name);
     sym->typname=(char*)malloc(sizeof(char));
     strcpy(sym->typname,typname);
-    sym->functype=0;
+    if(arraytype==1)sym->functype=2;
+	else sym->functype=0;
     sym->next=NULL;
     struct symbol* tsym=symbollist;
     while(tsym->next!=NULL)
@@ -63,7 +65,7 @@ char* gettype(char* name)
 int getfunctype(char* name)
 {
     int mark=0;
-    int type;
+    int type=-1;
     struct symbol* sym=symbollist;
     sym=sym->next;
     while(sym!=NULL)
@@ -93,6 +95,35 @@ int lookup(char* name)
         sym=sym->next;
     }
     return mark;
+}
+char* judgestruct(char* name,char* name2,int line)
+{
+    int mark=0,mark2=0;
+    struct symbol* sym=symbollist;
+    sym=sym->next;
+    char* result="INT";
+    while(sym!=NULL)
+    {
+        if(strcmp(name,sym->name)==0&&sym->functype==1)
+        {
+            mark=1;
+            struct arg* arg=sym->arg;
+            while(arg!=NULL)
+            {
+                if(strcmp(arg->name,name2)==0){
+                    mark2=1;
+                    strcpy(result,arg->typname);
+                }
+                arg=arg->next;
+                if(mark2==1)break;
+            }
+        }
+        if(mark==1)break;
+        sym=sym->next;
+    }
+    if(mark==0)error13(line);
+    else if(mark2==0)error14(name2,line);
+    return result;
 }
 void symbollisttrace()
 {
@@ -124,27 +155,36 @@ void symbollisttrace()
         tsym=tsym->next;
     }
 }
-void addsymbol1(char* name,struct namelist* namelist)
+void addsymbol1(char* name,struct namelist* namelist,int line)
 {
     struct namelist* t=namelist;
     while(t!=NULL)
     {
         if(lookup(t->name)==0)
         {
-            insertsym1(t->name,name);
+            insertsym1(t->name,name,t->arraymark);
         }
-        else printf("错误类型3重复定义");
+        else error3(t->name,line);
         t=t->next;
     }
 }
-void addfunc(char* name,struct namelist* namelist,int mark)
+void addfunc(char* name,struct namelist* namelist,int mark,int line)
 {
     if(lookup(name)==0)
     {
         char* tname="int";
         insertsym2(name,tname,mark,getarg(namelist));
     }
-    else printf("错误类型3重复定义");
+    else error4(name,line);
+}
+void addstruct(char* name,struct namelist* namelist,int mark,int line)
+{
+    if(lookup(name)==0)
+    {
+        char* tname="int";
+        insertsym2(name,tname,mark,getarg(namelist));
+    }
+    else error16(name,line);
 }
 struct arg* getarg(struct namelist* namelist)
 {
@@ -180,4 +220,31 @@ void modfunctype(char* name,char* typname)
         if(mark==1)break;
         sym=sym->next;
     }
+}
+int checkargs(char* name,struct namelist* namelist)
+{
+    int mark=0;
+    int result=1;
+    struct symbol* sym=symbollist;
+    sym=sym->next;
+    while(sym!=NULL)
+    {
+        if(strcmp(name,sym->name)==0)
+        {
+            mark=1;
+            struct arg* arg=sym->arg;
+            struct namelist* t=namelist;
+            while(arg!=NULL&&t!=NULL)
+            {
+                if(strcmp(arg->typname,t->name)!=0)result=0;
+                if(result==0)break;
+                arg=arg->next;
+                t=t->next;
+            }
+            if(t!=NULL||arg!=NULL)result=0;
+        }
+        if(mark==1)break;
+        sym=sym->next;
+    }
+    return result;
 }

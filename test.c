@@ -1,21 +1,58 @@
+int ggg()
+{	qq;
+	g();
+	return 1;
+}
+struct test{
+	int a,z;
+	float c,d;
+};
+int f(float q,int w)
+{
+	int gg=0;
+	int gg;
+	return 0;
+}
 int f()
 {
-	int a=1;
-	a=a+1;
+	gg=1.5;
+    10=gg;
+    10.2+gg;
+    return 1.1;
 }
-int g()
+int hh()
 {
-	float x=1.5;
-	float y=1.4e+2;
-	int z=0Xa1;
-	int l=071;
-	if(x==1)
-	{
-        x=x+y+z+l;
-	}
-	else
-	{
-
-	}
+	f(1);
+	return 0;
+}
+int main()
+{
+    int i;
+    i[0];
+    i(10);
+	return 0;
+}
+int hgj()
+{
+    int j[10];
+    j[1.5];
+    i.a;
+    return 0;
+}
+int uyt()
+{
+	struct test zzz;
+	zzz.n;
+	return 1;
+}
+struct yy{
+	int uu=1;
+};
+struct i{
+    int ll;
+};
+int iyy()
+{
+    struct position bb;
 	return 0;
 }

@@ -16,11 +16,11 @@ struct symbol{
 void insertsym2(char* name,char* typname,int functype,struct arg* arg);
 int lookup(char* name);
 void symbollisttrace();
-void addsymbol1(char* name,struct namelist* namelist);
+void addsymbol1(char* name,struct namelist* namelist,int line);
 void initsymbolist();
 void modfunctype(char* name,char* typname);
 struct arg* getarg(struct namelist* namelist);
-void addfunc(char* name,struct namelist* namelist,int mark);
+void addfunc(char* name,struct namelist* namelist,int mark,int line);
 int getfunctype(char* name);
 char* gettype(char* name);
 #endif // SYMBOL_H_INCLUDED

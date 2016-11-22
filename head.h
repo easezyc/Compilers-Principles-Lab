@@ -5,12 +5,17 @@ union Info{
 };
 struct namelist{
 	char* name;
+	int arraymark;
 	struct namelist* next;
 };
 struct ast{
-	int line;	
+	int arraymark;
+	int line;
 	union Info info;
 	int type;
+	int rlmark;//0表示左值，1表示右值
+	char* typname;
+	char* up;
 	int rlength;
 	int llength;
 	char* name;//综合属性变量名
@@ -18,7 +23,8 @@ struct ast{
 	struct ast *lc;
 	struct ast *rc;
 };
-struct namelist* addnamelist(struct ast* ast1,char* name);
+void setarrtype(struct ast* ast,char* name,int mark,int rlmark);
+struct namelist* addnamelist(struct ast* ast1,char* name,int arraymark);
 struct ast* newast(union Info v);
 struct ast* newastinit(union Info info,int type,int line);
 union Info makeint(int n);
