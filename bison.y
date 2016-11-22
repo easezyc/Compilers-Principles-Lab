@@ -39,7 +39,9 @@ ExtDefList:	ExtDef ExtDefList{
 } 
 	| {$$ = newast(maketext("null"));}
 	;
-ExtDef:		Specifier ExtDecList SEMI {$$ = newast3(maketext("ExtDef"), $1,$2,$3);addsymbol1($1->name,$2->namearg);}
+ExtDef:		Specifier ExtDecList SEMI {$$ = newast3(maketext("ExtDef"), $1,$2,$3);
+										addsymbol1($1->name,$2->namearg);
+										 }
 	|Specifier SEMI {$$ = newast2(maketext("ExtDef"), $1,$2);}
 	|Specifier FunDec CompSt {$$ = newast3(maketext("ExtDef"), $1,$2,$3);modfunctype($2->name,$1->name);}
 	|error SEMI {}	
@@ -51,7 +53,9 @@ ExtDecList:	VarDec {$$ = newast1(maketext("ExtDecList"), $1);$$->namearg=addname
 Specifier:	TYPE {$$ = newast1(maketext("Specifier"), $1);strcpy($$->name,$1->info.name);}
 	|StructSpecifier {$$ = newast1(maketext("Specifier"), $1);strcpy($$->name,$1->name);}
 	;
-StructSpecifier:	STRUCT OptTag LC DefList RC {$$ = newast5(maketext("StructSpecifier"), $1,$2,$3,$4,$5);strcpy($$->name,$2->name);}
+StructSpecifier:	STRUCT OptTag LC DefList RC {$$ = newast5(maketext("StructSpecifier"), $1,$2,$3,$4,$5);strcpy($$->name,$2->name);
+											addfunc($2->name,$4->namearg,1);strcpy($$->name,$1->info.name);
+						char* name="struct";modfunctype($2->name,name);}
 	|STRUCT Tag {$$ = newast2(maketext("StructSpecifier"), $1,$2);strcpy($$->name,$2->name);}
 	;
 OptTag:		ID {$$ = newast1(maketext("OptTag"), $1);strcpy($$->name,$1->info.name);}
@@ -61,8 +65,8 @@ Tag:	ID {$$ = newast1(maketext("Tag"), $1);strcpy($$->name,$1->info.name);}
 
 VarDec:		ID {$$ = newast1(maketext("VarDec"), $1);strcpy($$->name,$1->info.name);}
 	|VarDec LB INT RB {$$ = newast4(maketext("VarDec"), $1,$2,$3,$4);strcpy($$->name,$1->name);};//    assssssssaaaaaaaaaaaaaaaaaaaa
-FunDec:		ID LP VarList RP {$$ = newast4(maketext("FunDec"), $1,$2,$3,$4);addfunc($1->info.name,$3->namearg);strcpy($$->name,$1->info.name);}
-	|ID LP RP {$$ = newast3(maketext("FunDec"), $1,$2,$3);addfunc($1->info.name,NULL);strcpy($$->name,$1->info.name);}
+FunDec:		ID LP VarList RP {$$ = newast4(maketext("FunDec"), $1,$2,$3,$4);addfunc($1->info.name,$3->namearg,3);strcpy($$->name,$1->info.name);}
+	|ID LP RP {$$ = newast3(maketext("FunDec"), $1,$2,$3);addfunc($1->info.name,NULL,3);strcpy($$->name,$1->info.name);}
 VarList:	ParamDec COMMA VarList{$$ = newast3(maketext("VarList"), $1,$2,$3);$$->namearg=addnamelist($3,$1->name);}
 	|ParamDec{$$ = newast1(maketext("VarList"), $1);$$->namearg=addnamelist($$,$1->name);}
 ParamDec:	Specifier VarDec{$$ = newast2(maketext("ParamDec"), $1,$2);strcpy($$->name,$2->name);$$->namearg=addnamelist($$,$2->name);addsymbol1($1->name,$$->namearg);}
@@ -78,10 +82,10 @@ Stmt:		Exp SEMI{$$ = newast2(maketext("Stmt"), $1,$2);}
 	|IF LP Exp RP Stmt ELSE Stmt{$$ = newast7(maketext("Stmt"), $1,$2,$3,$4,$5,$6,$7);}
 	|WHILE LP Exp RP Stmt {$$ = newast5(maketext("Stmt"), $1,$2,$3,$4,$5);}
 	;
-DefList:	Def DefList {$$ = newast2(maketext("DefList"), $1,$2);}
-	| {$$ = newast(maketext("null"));;}
+DefList:	Def DefList {$$ = newast2(maketext("DefList"), $1,$2);$$->namearg=linknamelist($1->namearg,$2->namearg);}
+	| {$$ = newast(maketext("null"));$$->namearg=NULL;}
 	;
-Def:	Specifier DecList SEMI {$$ = newast3(maketext("Def"), $1,$2,$3);addsymbol1($1->name,$2->namearg);}
+Def:	Specifier DecList SEMI {$$ = newast3(maketext("Def"), $1,$2,$3);addsymbol1($1->name,$2->namearg);$$->namearg=$2->namearg;}
 ;
 DecList:	Dec {$$ = newast1(maketext("DecList"), $1);$$->namearg=addnamelist($$,$1->name);}
 	|Dec COMMA DecList {$$ = newast3(maketext("DecList"), $1,$2,$3);$$->namearg=addnamelist($3,$1->name);}
@@ -120,6 +124,33 @@ void show(struct namelist* list)
 		printf("%s\n",list->name);
 		list=list->next;
 	}
+}
+struct namelist* linknamelist(struct namelist* list1,struct namelist* list2)
+{
+	struct namelist* newlist=(struct namelist*)malloc(sizeof(struct namelist));
+	struct namelist* t=newlist;
+	struct namelist* tt=list1;
+	while(tt!=NULL)
+	{
+		struct namelist* ttt=(struct namelist*)malloc(sizeof(struct namelist));
+		ttt->name=(char*)malloc(sizeof(char));
+		strcpy(ttt->name,tt->name);
+		t->next=ttt;
+		t=t->next;
+		tt=tt->next;
+	}
+	tt=list2;
+	while(tt!=NULL)
+	{
+		struct namelist* ttt=(struct namelist*)malloc(sizeof(struct namelist));
+		ttt->name=(char*)malloc(sizeof(char));
+		strcpy(ttt->name,tt->name);
+		t->next=ttt;
+		t=t->next;
+		tt=tt->next;
+	}
+	newlist=newlist->next;
+	return newlist;
 }
 struct namelist* addnamelist(struct ast* ast1,char* name)
 {

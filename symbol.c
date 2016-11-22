@@ -101,7 +101,7 @@ void symbollisttrace()
     while(tsym!=NULL)
     {
         if(tsym->functype==3){
-            printf("func:  name%s  type:%s\n",tsym->name,tsym->typname);
+            printf("func:  name%s  type:%s  functype:%d\n",tsym->name,tsym->typname,tsym->functype);
             struct arg* arg=tsym->arg;
             while(arg!=NULL)
             {
@@ -110,7 +110,17 @@ void symbollisttrace()
             }
 			printf("\n");
         }
-        else printf("name%s  type:%s\n",tsym->name,tsym->typname);
+		else if(tsym->functype==1){
+             printf("struct:  name%s  type:%s  functype:%d\n",tsym->name,tsym->typname,tsym->functype);
+             struct arg* arg=tsym->arg;
+             while(arg!=NULL)
+             {
+                 printf("name:%s  type:%s\n",arg->name,arg->typname);
+                 arg=arg->next;
+             }
+             printf("\n");
+         }
+        else printf("name%s  type:%s  functype:%d\n",tsym->name,tsym->typname,tsym->functype);
         tsym=tsym->next;
     }
 }
@@ -127,12 +137,12 @@ void addsymbol1(char* name,struct namelist* namelist)
         t=t->next;
     }
 }
-void addfunc(char* name,struct namelist* namelist)
+void addfunc(char* name,struct namelist* namelist,int mark)
 {
     if(lookup(name)==0)
     {
         char* tname="int";
-        insertsym2(name,tname,3,getarg(namelist));
+        insertsym2(name,tname,mark,getarg(namelist));
     }
     else printf("错误类型3重复定义");
 }

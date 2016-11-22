@@ -20,7 +20,7 @@ void addsymbol1(char* name,struct namelist* namelist);
 void initsymbolist();
 void modfunctype(char* name,char* typname);
 struct arg* getarg(struct namelist* namelist);
-void addfunc(char* name,struct namelist* namelist);
+void addfunc(char* name,struct namelist* namelist,int mark);
 int getfunctype(char* name);
 char* gettype(char* name);
 #endif // SYMBOL_H_INCLUDED

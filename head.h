@@ -32,3 +32,5 @@ struct ast *newast5(union Info info, struct ast *a,struct ast *b,struct ast *c,s
 struct ast *newast7(union Info info, struct ast *a,struct ast *b,struct ast *c,struct ast *d,struct ast *e,struct ast *f,struct ast *g);
 void freetree(struct ast *t);
 void tracetree(struct ast *t,int l);
+struct namelist* linknamelist(struct namelist* list1,struct namelist* list2);
+void show(struct namelist* list);
