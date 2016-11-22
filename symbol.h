@@ -23,4 +23,5 @@ struct arg* getarg(struct namelist* namelist);
 void addfunc(char* name,struct namelist* namelist,int mark,int line);
 int getfunctype(char* name);
 char* gettype(char* name);
+void freesymlist();
 #endif // SYMBOL_H_INCLUDED

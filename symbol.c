@@ -248,3 +248,23 @@ int checkargs(char* name,struct namelist* namelist)
     }
     return result;
 }
+void freesymlist()
+{
+    while(symbollist!=NULL)
+    {
+        free(symbollist->name);
+        free(symbollist->typname);
+        struct arg* arg=symbollist->arg;
+        while(arg!=NULL)
+        {
+            free(arg->name);
+            free(arg->typname);
+            struct arg* tt=arg;
+            arg=arg->next;
+            free(tt);
+        }
+        struct symbol* t=symbollist;
+        symbollist=symbollist->next;
+        free(t);
+    }
+}
