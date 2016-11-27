@@ -1,9 +1,8 @@
 %{
-//	#include"head.h"
 	#include"lex.yy.c"	
 	#include<string.h>
-	#include"symbol.h"
-	#include"symbol.c"
+	#include"centercode.h"
+	#include"centercode.c"
 	extern yylineno;
 	int yylex();
 	void yyerror(char *);
@@ -30,8 +29,11 @@
 %left DOT LB RB LP RP
 %%
 Program:	ExtDefList {$$ = newast1(maketext("Program"), $1);
+	initsymbollist();
 //	tracetree($$, 0);
-	freetree($$);
+	tracetree2($$);
+//	freetree($$);
+	
 //	symbollisttrace();
 	freesymlist();
 };
@@ -65,7 +67,7 @@ OptTag:		ID {$$ = newast1(maketext("OptTag"), $1);strcpy($$->name,$1->info.name)
 	;
 Tag:	ID {$$ = newast1(maketext("Tag"), $1);strcpy($$->name,$1->info.name);}
 
-VarDec:		ID {$$ = newast1(maketext("VarDec"), $1);strcpy($$->name,$1->info.name);$$->arraymark=0;}
+VarDec:		ID {$$ = newast1(maketext("VarDec"), $1);strcpy($$->name,$1->info.name);$$->arraymark=0;$$->tfname=1;strcpy($$->tname,$1->info.name);}
 	|VarDec LB INT RB {$$ = newast4(maketext("VarDec"), $1,$2,$3,$4);strcpy($$->name,$1->name);$$->arraymark=1;};//    assssssssaaaaaaaaaaaaaaaaaaaa
 FunDec:		ID LP VarList RP {$$ = newast4(maketext("FunDec"), $1,$2,$3,$4);addfunc($1->info.name,$3->namearg,3,$1->line);strcpy($$->name,$1->info.name);}
 	|ID LP RP {$$ = newast3(maketext("FunDec"), $1,$2,$3);addfunc($1->info.name,NULL,3,$1->line);strcpy($$->name,$1->info.name);}
@@ -125,9 +127,9 @@ Exp:	Exp ASSIGNOP Exp {$$ = newast3(maketext("Exp"), $1,$2,$3);setarrtype($$,"in
 	|ID LP RP {$$ = newast3(maketext("Exp"), $1,$2,$3);error2($1->info.name,$1->line);setarrtype($$,$1->typname,0,1);error11($1->info.name,$1->line);}
 	|Exp LB Exp RB {$$ = newast4(maketext("Exp"), $1,$2,$3,$4);setarrtype($$,$1->typname,1,1);error12($3->typname,$1->line);error10($1->name,$1->line);}
 	|Exp DOT ID {$$ = newast3(maketext("Exp"), $1,$2,$3);setarrtype($$,judgestruct($1->typname,$3->info.name,$1->line),0,1);}
-	|ID {$$ = newast1(maketext("Exp"), $1);$$->type=$1->type;strcpy($$->name,$1->info.name);error1($$->name,$$->line);setarrtype($$,gettype($1->info.name),0,1);}
-	|INT {$$ = newast1(maketext("Exp"), $1);$$->type=$1->type;strcpy($$->name,"no");setarrtype($$,"int",0,0);}
-	|FLOAT {$$ = newast1(maketext("Exp"), $1);$$->type=$1->type;strcpy($$->name,"no");setarrtype($$,"float",0,0);}
+	|ID {$$ = newast1(maketext("Exp"), $1);strcpy($$->name,$1->info.name);error1($$->name,$$->line);setarrtype($$,gettype($1->info.name),0,1);}
+	|INT {$$ = newast1(maketext("Exp"), $1);strcpy($$->name,"no");setarrtype($$,"int",0,0);}
+	|FLOAT {$$ = newast1(maketext("Exp"), $1);strcpy($$->name,"no");setarrtype($$,"float",0,0);}
 	;
 Args:	Exp COMMA Args {$$ = newast3(maketext("Args"), $1,$2,$3);$$->namearg=addnamelist($3,$1->typname,$1->arraymark);}
 	|Exp {$$ = newast1(maketext("Args"),$1);$$->namearg=addnamelist($$,$1->typname,$1->arraymark);}
@@ -210,6 +212,7 @@ struct ast* newast(union Info v)
 	ast->name=(char*)malloc(sizeof(char));
 	ast->typname=(char*)malloc(sizeof(char));
 	ast->up=(char*)malloc(sizeof(char));
+	ast->tname=(char*)malloc(sizeof(char));
 	strcpy(ast->up,"yes");
 	return ast;		
 }

@@ -2,13 +2,6 @@
 #include<string.h>
 #include"symbol.h"
 #include"error.c"
-void initsymbollist()
-{
-    symbollist=(struct symbol*)malloc(sizeof(struct symbol));
-    symbollist->next=NULL;
-    symbollist->name=(char*)malloc(sizeof(char));
-    symbollist->typname=(char*)malloc(sizeof(char));
-}
 void insertsym1(char* name,char* typname,int arraytype)
 {
     struct symbol* sym=(struct symbol*)malloc(sizeof(struct symbol));
@@ -132,7 +125,7 @@ void symbollisttrace()
     while(tsym!=NULL)
     {
         if(tsym->functype==3){
-            printf("func:  name%s  type:%s  functype:%d\n",tsym->name,tsym->typname,tsym->functype);
+            printf("func:  name:%s  type:%s  functype:%d\n",tsym->name,tsym->typname,tsym->functype);
             struct arg* arg=tsym->arg;
             while(arg!=NULL)
             {
@@ -142,7 +135,7 @@ void symbollisttrace()
 			printf("\n");
         }
 		else if(tsym->functype==1){
-             printf("struct:  name%s  type:%s  functype:%d\n",tsym->name,tsym->typname,tsym->functype);
+             printf("struct:  name:%s  type:%s  functype:%d\n",tsym->name,tsym->typname,tsym->functype);
              struct arg* arg=tsym->arg;
              while(arg!=NULL)
              {
@@ -151,7 +144,7 @@ void symbollisttrace()
              }
              printf("\n");
          }
-        else printf("name%s  type:%s  functype:%d\n",tsym->name,tsym->typname,tsym->functype);
+        else printf("name:%s  type:%s  functype:%d\n",tsym->name,tsym->typname,tsym->functype);
         tsym=tsym->next;
     }
 }
@@ -267,4 +260,18 @@ void freesymlist()
         symbollist=symbollist->next;
         free(t);
     }
+}
+void initsymbollist()
+{
+    symbollist=(struct symbol*)malloc(sizeof(struct symbol));
+    symbollist->next=NULL;
+    symbollist->name=(char*)malloc(sizeof(char));
+    symbollist->typname=(char*)malloc(sizeof(char));
+    struct namelist* namelist=(struct namelist*)malloc(sizeof(struct namelist));
+    insertsym1("_w","int",0);
+    addfunc("read",NULL,3,0);
+    modfunctype("read","int");
+    namelist->name="_w";
+    addfunc("write",namelist,3,0);
+    modfunctype("write","int");
 }

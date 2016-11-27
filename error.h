@@ -1,5 +1,6 @@
 #ifndef ERROR_H_INCLUDED
 #define ERROR_H_INCLUDED
+//分别对应17类错误
 void error1(char* name,int line);
 void error2(char* name,int line);
 void error3(char* name,int line);
