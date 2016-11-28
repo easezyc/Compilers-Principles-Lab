@@ -113,7 +113,7 @@ void traceexp(struct ast *t,int mark)
     if(t->llength!=0) traceexp(t->lc,1);
     if(t->rlength!=0)
     {
-        if(mark==0){}
+        if(mark==0) {}
         else traceexp(t->rc,1);
     }
     if(t->lc!=NULL&&t->lc->type==INT)
@@ -137,6 +137,7 @@ void traceexp(struct ast *t,int mark)
             t->tfname=0;
             xnum++;
         }
+		else printf("%s ",t->tname);
         if(t->lc->tfname==0)
         {
             printf("_t%d ",t->lc->xnum);
@@ -173,11 +174,7 @@ void traceexp(struct ast *t,int mark)
     {
         struct namelist* namelist=t->lc->rc->rc->namearg;
         if(namelist!=NULL)printf("ARG ");
-        while(namelist!=NULL)
-        {
-            printf("%s ",namelist->name);
-            namelist=namelist->next;
-        }
+        tracearg(t->lc->rc->rc);
         if(t->lc->rc->rc->namearg!=NULL)printf("\n");
         printf("_t%d := ",xnum);
         t->xnum=xnum;
@@ -185,4 +182,20 @@ void traceexp(struct ast *t,int mark)
         xnum++;
         printf("CALL %s\n",t->lc->info.name);
     }
+}
+void tracearg(struct ast *t)
+{
+    if(strcmp(t->info.name,"Exp")==0)
+    {
+        if(t->tfname==0)
+        {
+            printf("_t%d ",t->xnum);
+        }
+        else
+        {
+            printf("%s ",t->tname);
+        }
+    }
+    if(t->llength!=0)tracearg(t->lc);
+    if(t->rlength!=0)tracearg(t->rc);
 }

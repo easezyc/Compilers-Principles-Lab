@@ -29,6 +29,7 @@ void error5(struct ast* ast1,struct ast* ast2,int line)
 {
     if(strcmp(ast1->typname,ast2->typname)!=0||ast1->arraymark!=ast2->arraymark)
     {
+        printf("%s    %s  aaa\n",ast1->typname,ast2->typname);
         printf("Error type 5 at Line %d: Type mismatched for assignment\n",line);
     }
 }
