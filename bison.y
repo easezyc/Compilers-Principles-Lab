@@ -31,9 +31,11 @@
 %%
 Program:	ExtDefList {$$ = newast1(maketext("Program"), $1);
 //	tracetree($$, 0);
+	openfile();
 	freetree($$);
 //	symbollisttrace();
 	tracetree2($$);
+	closefile();
 	freesymlist();
 };
 ExtDefList:	ExtDef ExtDefList{

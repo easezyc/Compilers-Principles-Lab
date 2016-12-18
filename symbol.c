@@ -241,6 +241,35 @@ int checkargs(char* name,struct namelist* namelist)
     }
     return result;
 }
+struct arg* getfuncargs(char* name)
+{
+    int mark=0;
+    struct symbol* sym=symbollist;
+    sym=sym->next;
+    struct arg* args=NULL;
+    while(sym!=NULL)
+    {
+        if(strcmp(name,sym->name)==0)
+        {
+            mark=1;
+            struct arg* t=sym->arg;
+            while(t!=NULL)
+            {
+                struct arg* tt=(struct arg*)malloc(sizeof(struct arg));
+                tt->name=(char*)malloc(sizeof(char));
+                tt->typname=(char*)malloc(sizeof(char));
+                strcpy(tt->name,t->name);
+                strcpy(tt->typname,t->typname);
+                tt->next=args;
+                args=tt;
+                t=t->next;
+            }
+        }
+        if(mark==1)break;
+        sym=sym->next;
+    }
+    return args;
+};
 void freesymlist()
 {
     while(symbollist!=NULL)
@@ -272,6 +301,6 @@ void initsymbollist()
     addfunc("read",NULL,3,0);
     modfunctype("read","int");
     namelist->name="_w";
-    addfunc("write",namelist,3,0);
-    modfunctype("write","int");
+    addfunc("dis",namelist,3,0);
+    modfunctype("dis","int");
 }

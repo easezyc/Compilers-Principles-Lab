@@ -24,4 +24,5 @@ void addfunc(char* name,struct namelist* namelist,int mark,int line);   //添加函
 int getfunctype(char* name);   //获得符号的functype
 char* gettype(char* name);    //获得符号的type名字
 void freesymlist();    //清空符号表
+struct arg* getfuncargs(char* name);   //获取参数表
 #endif // SYMBOL_H_INCLUDED
